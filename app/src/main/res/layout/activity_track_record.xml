@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fon"
+    tools:context="com.example.tom.firstapp.TrackRecord">
+
+    <ScrollView
+        android:id="@+id/myscroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="344dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="249dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/point10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Набрать 10 очков"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/point50"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Набрать 50 очков"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/point100"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Набрать 100 очков"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/point300"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Набрать 300 очков"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/champion10"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Узнать 10 чемпионов"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/champion50"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Узнать 50 чемпионов"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/champion100"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Узнать 100 чемпионов"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/champion141"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Узнать 141 чемпионов"
+                    android:layout_marginBottom="10sp"
+                    android:textColor="@android:color/holo_orange_light"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>
