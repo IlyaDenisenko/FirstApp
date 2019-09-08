@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.content.*;
 
+import com.example.tom.firstapp.utils.MyService;
+import com.example.tom.firstapp.utils.Sound;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -24,8 +26,8 @@ import com.google.android.gms.ads.MobileAds;
 
 import java.util.Random;
 
-import static com.example.tom.firstapp.ActivitySettings.bTrueM;
-import static com.example.tom.firstapp.ActivitySettings.bTrueS;
+import static com.example.tom.firstapp.ActivitySettings.bTrueMusic;
+import static com.example.tom.firstapp.ActivitySettings.bTrueSound;
 import static com.example.tom.firstapp.Quest.mscore;
 
 public class Menu extends AppCompatActivity {
@@ -33,6 +35,7 @@ public class Menu extends AppCompatActivity {
     private InterstitialAd mInterstitial;
 
     int scene;
+    static int soundTrue, soundFalse;
     static public int mscore2;
     int marketingInt = 0;
     Random r;
@@ -56,36 +59,24 @@ public class Menu extends AppCompatActivity {
         Butto();
         sPref = getPreferences(MODE_PRIVATE);
 
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            // Для устройств до Android 5
-            createOldSoundPool();
-       }  else {
-            // Для новых устройств
-            createNewSoundPool();
-        }
 
         // проверка CheckBox на музыке
         sPref = getSharedPreferences("saved_pos" ,MODE_PRIVATE);
-        bTrueM = sPref.getBoolean("saved_pos",  bTrueM);
+        bTrueMusic = sPref.getBoolean("saved_pos", bTrueMusic);
         sPrefSound = getSharedPreferences("savedS" ,MODE_PRIVATE);
-        bTrueS = sPrefSound.getBoolean("savedS", bTrueS);
+        bTrueSound = sPrefSound.getBoolean("savedS", bTrueSound);
 
+        initSound();
         marketing();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void createNewSoundPool() {
-        AudioAttributes aa = new AudioAttributes.Builder().
-                setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).setUsage(AudioAttributes.USAGE_GAME).build();
-        mSoundpool = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(aa).build();
-        soundCheck = mSoundpool.load(this, R.raw.snap, 1);
+    public void initSound(){
+        Sound.enabledSoundPool();
+        soundTrue = Sound.loadSound(this, R.raw.ring);
+        soundFalse = Sound.loadSound(this, R.raw.crack);
+        soundCheck = Sound.loadSound(this, R.raw.snap);
     }
 
-    @SuppressWarnings("deprecation")
-    private void createOldSoundPool() {
-        mSoundpool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        soundCheck = mSoundpool.load(this, R.raw.snap, 1);
-    }
 
     private void marketing(){
           // Реклама
@@ -121,13 +112,19 @@ public class Menu extends AppCompatActivity {
     public void onResume(){
         super.onResume();
         // Музыка
-        startService(new Intent(Menu.this, MyService.class));
-        if (!bTrueM)
+        if (bTrueMusic)
+            startService(new Intent(Menu.this, MyService.class));
+        if (!bTrueMusic)
             stopService(new Intent(Menu.this, MyService.class));
         // Звук
-        if (!bTrueS)
+        if (!bTrueSound)
             mSoundpool.stop(mStreamID);
+    }
 
+    @Override
+    public void onPause(){
+        super.onPause();
+        MyService.pause();
     }
 
 // Окно с выходом
@@ -159,7 +156,7 @@ public class Menu extends AppCompatActivity {
         r = new Random();
         scene = r.nextInt(5);
         startBut = (Button)findViewById(R.id.button);
-        settingsBut = (Button)findViewById(R.id.exit);
+        settingsBut = (Button)findViewById(R.id.settings);
         recordBut = (Button)findViewById(R.id.recBut);
         record = (TextView)findViewById(R.id.record);
 
@@ -178,12 +175,14 @@ public class Menu extends AppCompatActivity {
         startBut.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v){
-                        if (bTrueS)
-                      mStreamID = mSoundpool.play(soundCheck, 1, 1, 1, 0, 1);
+                        if (bTrueSound)
+                     Sound.playSound(soundCheck);
                         switch (scene){
                             case 2:
                             case 1:
-                            case 0: Intent inte = new Intent(Menu.this, Quest.class);
+                            case 0:
+                                Intent inte = new Intent(Menu.this, Quest.class);
+
                                startActivity(inte);
                                 mscore = 0;
                                 finish();
@@ -206,8 +205,9 @@ public class Menu extends AppCompatActivity {
                 new View.OnClickListener(){
                     @Override
                     public void onClick(View v){
-                        if (bTrueS)
-                            mStreamID = mSoundpool.play(soundCheck, 1, 1, 1, 0, 1);
+                        if (bTrueSound)
+                           // mStreamID = mSoundpool.play(soundCheck, 1, 1, 1, 0, 1);
+                        Sound.playSound(soundCheck);
                         Intent in = new Intent(Menu.this, ActivitySettings.class);
                         startActivity(in);
                         finish();
@@ -218,8 +218,9 @@ public class Menu extends AppCompatActivity {
         recordBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (bTrueS)
-                    mStreamID = mSoundpool.play(soundCheck, 1, 1, 1, 0, 1);
+                if (bTrueSound)
+                   // mStreamID = mSoundpool.play(soundCheck, 1, 1, 1, 0, 1);
+                Sound.playSound(soundCheck);
                 Intent recordIntent = new Intent(Menu.this, TrackRecord.class);
                 startActivity(recordIntent);
                 SaveS();

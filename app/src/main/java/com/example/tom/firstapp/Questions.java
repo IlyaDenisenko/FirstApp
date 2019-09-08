@@ -582,31 +582,29 @@ public class Questions {
     };
 
 
-    public static ArrayList<String> Numbers = new ArrayList();
-    ArrayList<String> array = new ArrayList<>();
+    public static ArrayList<String> arrayChouses = new ArrayList();
+    private ArrayList<String> arrayQuestions = new ArrayList<>();
 
     public String getQuestions(int a){
         String questions = nQuestions[a];
-        for (int x = 0; x < nQuestions.length; x++)
-            array.add(nQuestions[x]);
         return questions;
     }
 
     public String getChouses1(int a){
-        Numbers.clear();
+        arrayChouses.clear();
         for(int i=0; i<4; i++)
-            Numbers.add(i,nChoices[a][i]);
-        Collections.shuffle(Numbers);
-        return Numbers.get(0);
+            arrayChouses.add(i,nChoices[a][i]);
+        Collections.shuffle(arrayChouses);
+        return arrayChouses.get(0);
     }
     public String getChouses2(){
-        return Numbers.get(1);
+        return arrayChouses.get(1);
     }
     public String getChouses3(){
-        return Numbers.get(2);
+        return arrayChouses.get(2);
     }
     public String getChouses4(){
-        return Numbers.get(3);
+        return arrayChouses.get(3);
     }
     public String getCorrect(int a){
         return nCorrect[a];

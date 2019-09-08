@@ -1,12 +1,7 @@
 package com.example.tom.firstapp;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.SoundPool;
-import android.os.Build;
 import android.os.CountDownTimer;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +15,9 @@ import android.widget.TextView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.tom.firstapp.utils.MyService;
+import com.example.tom.firstapp.utils.Sound;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,8 +26,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.example.tom.firstapp.ActivitySettings.bTrueM;
-import static com.example.tom.firstapp.ActivitySettings.bTrueS;
+import static com.example.tom.firstapp.ActivitySettings.bTrueMusic;
+import static com.example.tom.firstapp.ActivitySettings.bTrueSound;
 import static com.example.tom.firstapp.Quest.mscore;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,15 +46,11 @@ public class MainActivity extends AppCompatActivity {
     static HashSet<String> recList = new HashSet<>();
     Set<String> ret = new HashSet<>();
 
-    // Звуки
-    static SoundPool sound;
-    public static int SoundTrue;
-    public static int SoundFalse;
 
     Timer timer;
     TimerTask Mytask; // переход при правильном ответе
     TimerTask Mytask2; // переход при не правильном ответе
-    CountDownT countDownT = new CountDownT(7000, 500);
+    CountDownT countDownT = new CountDownT(17000, 500);
 
     SharedPreferences sPref, sPrefSound;
     static SharedPreferences sPrefPicture;
@@ -154,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             {"Твич", "Раммус", "Клед", "Зак"},
             {"Рек'Сай", "Ка'Зикс", "Чо'Гат", "Вел'Коз"},
             {"Элиза", "Эвелинн", "Энни", "Экко"},
-            {"Кейтлин", "Джинкс, Вай", "Мисс Фортуна"},
+            {"Кейтлин", "Джинкс", "Вай", "Мисс Фортуна"},
             {"Мальзахар", "Кассадин", "Вел'Коз", "Зерат"},
             {"Пантеон", "Гарен", "Дариус", "Ургот"},
             {"Ренектон", "Насус", "Варвик", "Ренгар"},
@@ -301,25 +295,24 @@ public class MainActivity extends AppCompatActivity {
         UpdateQuestion(r.nextInt(trueOtvets.length));
         countDownT.start();
 
-        // Звуки
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            // Для устройств до Android 5
-            createOldSoundPool();
-        }  else {
-            // Для новых устройств
-            createNewSoundPool();
-        }
 
         sPref = getSharedPreferences("saved_pos" ,MODE_PRIVATE);
-        bTrueM = sPref.getBoolean("saved_pos",  bTrueM);
+        bTrueMusic = sPref.getBoolean("saved_pos", bTrueMusic);
         sPrefSound = getSharedPreferences("savedS" ,MODE_PRIVATE);
-        bTrueS = sPrefSound.getBoolean("savedS", bTrueS);
+        bTrueSound = sPrefSound.getBoolean("savedS", bTrueSound);
     }
 
     @Override
     public void onResume(){
         super.onResume();
+        if (bTrueMusic) MyService.start();
         LoadS();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        MyService.pause();
     }
 
     @Override
@@ -328,21 +321,6 @@ public class MainActivity extends AppCompatActivity {
         SaveS();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void createNewSoundPool() {
-        AudioAttributes aa = new AudioAttributes.Builder().
-                setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).setUsage(AudioAttributes.USAGE_GAME).build();
-        sound = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(aa).build();
-        SoundTrue = sound.load(this, R.raw.ring, 1);
-        SoundFalse = sound.load(this, R.raw.crack, 1);
-    }
-
-    @SuppressWarnings("deprecation")
-    private void createOldSoundPool() {
-        sound = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        SoundTrue = sound.load(this, R.raw.ring, 1);
-        SoundFalse = sound.load(this, R.raw.crack, 1);
-    }
 
     public int getQuest(int a){
         questions = imagesList[a];
@@ -378,8 +356,8 @@ public class MainActivity extends AppCompatActivity {
                 timer = new Timer();
                 Button();
                 if (but1.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
                     Animation anim;
                     anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.mytrans);
                     point.startAnimation(anim);
@@ -391,8 +369,8 @@ public class MainActivity extends AppCompatActivity {
                     recList.add(nCorrect);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
                     Toast toast = Toast.makeText(MainActivity.this, "Игра окончена. Правильных ответов: " + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
                     toast.show();
@@ -409,8 +387,8 @@ public class MainActivity extends AppCompatActivity {
                 Button();
                 countDownT.cancel();
                 if (but2.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
                     Animation anim;
                     anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.mytrans);
                     point.startAnimation(anim);
@@ -422,8 +400,8 @@ public class MainActivity extends AppCompatActivity {
                     recList.add(nCorrect);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
                     Toast toast = Toast.makeText(MainActivity.this, "Игра окончена. Правильных ответов: " + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
                     toast.show();
@@ -440,8 +418,8 @@ public class MainActivity extends AppCompatActivity {
                 Button();
                 countDownT.cancel();
                 if (but3.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
                     Animation anim;
                     anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.mytrans);
                     point.startAnimation(anim);
@@ -453,8 +431,8 @@ public class MainActivity extends AppCompatActivity {
                     recList.add(nCorrect);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
                     Toast toast = Toast.makeText(MainActivity.this, "Игра окончена. Правильных ответов: " + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
                     toast.show();
@@ -471,8 +449,8 @@ public class MainActivity extends AppCompatActivity {
                 Button();
                 countDownT.cancel();
                 if (but4.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
                     Animation anim;
                     anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.mytrans);
                     point.startAnimation(anim);
@@ -484,8 +462,8 @@ public class MainActivity extends AppCompatActivity {
                     recList.add(nCorrect);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
                     Toast toast = Toast.makeText(MainActivity.this, "Игра окончена. Правильных ответов: " + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
                     toast.show();

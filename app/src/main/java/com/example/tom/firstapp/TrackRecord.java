@@ -8,6 +8,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 
+import com.example.tom.firstapp.utils.MyService;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -84,10 +86,12 @@ public class TrackRecord extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
+        if (ActivitySettings.bTrueMusic) MyService.start();
     }
     @Override
-    public void onStop(){
-        super.onStop();
+    public void onPause(){
+        super.onPause();
+        MyService.pause();
     }
     @Override
     public void onBackPressed(){

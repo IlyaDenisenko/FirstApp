@@ -1,31 +1,27 @@
 package com.example.tom.firstapp;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.SoundPool;
-import android.os.Build;
 import android.os.CountDownTimer;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.tom.firstapp.utils.MyService;
+import com.example.tom.firstapp.utils.Sound;
+
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.example.tom.firstapp.ActivitySettings.bTrueM;
-import static com.example.tom.firstapp.ActivitySettings.bTrueS;
+import static com.example.tom.firstapp.ActivitySettings.bTrueMusic;
+import static com.example.tom.firstapp.ActivitySettings.bTrueSound;
 
 public class Quest extends AppCompatActivity {
 
@@ -36,12 +32,9 @@ public class Quest extends AppCompatActivity {
     static int mscore;
 
     Timer timer;
-    TimerTask Mytask;
-    TimerTask Mytask2;
+    TimerTask correctAnswerTask;
+    TimerTask incorrecttAnswerTask;
 
-    SoundPool sound;
-    int SoundTrue;
-    int SoundFalse;
 
     Button but1, but2, but3, but4;
     TextView text,score;
@@ -67,6 +60,19 @@ public class Quest extends AppCompatActivity {
         }
         countDownT.cancel();
     }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (bTrueMusic) MyService.start();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        MyService.pause();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,39 +92,16 @@ public class Quest extends AppCompatActivity {
 
         UpdateQuest(r.nextInt(nQuestionsLenght));
 
-       if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            // Для устройств до Android 5
-            createOldSoundPool();
-        }  else {
-            // Для новых устройств
-            createNewSoundPool();
-        }
 
         sPref = getSharedPreferences("saved_pos" ,MODE_PRIVATE);
-        bTrueM = sPref.getBoolean("saved_pos",  bTrueM);
+        bTrueMusic = sPref.getBoolean("saved_pos", bTrueMusic);
         sPrefSound = getSharedPreferences("savedS" ,MODE_PRIVATE);
-        bTrueS = sPrefSound.getBoolean("savedS", bTrueS);
+        bTrueSound = sPrefSound.getBoolean("savedS", bTrueSound);
 
         quize();
-
         countDownT.start();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void createNewSoundPool() {
-        AudioAttributes aa = new AudioAttributes.Builder().
-                setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).setUsage(AudioAttributes.USAGE_GAME).build();
-        sound = new SoundPool.Builder().setMaxStreams(3).setAudioAttributes(aa).build();
-        SoundTrue = sound.load(this, R.raw.ring, 1);
-        SoundFalse = sound.load(this, R.raw.crack, 1);
-    }
-
-    @SuppressWarnings("deprecation")
-    private void createOldSoundPool() {
-        sound = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        SoundTrue = sound.load(this, R.raw.ring, 1);
-        SoundFalse = sound.load(this, R.raw.crack, 1);
-    }
 
         public void quize(){
 
@@ -129,28 +112,30 @@ public class Quest extends AppCompatActivity {
                 countDownT.cancel();
 
                 timer = new Timer();
-                Mytask = new MyTask();
-                Button();
+                correctAnswerTask = new CorrectAnswerTask();
+                buttonEnabled();
                 if (but1.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
                     // запускаю анимацию
-                    Animation anim ;
-                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
-                    point.startAnimation(anim);
-                    Questions.Numbers.clear(); // очищаю лист в ответами(чтобы ответы не смешивались)
-                    timer.schedule(Mytask, 2000); //переход к следующему вопросу через 2 сек
+//                    Animation anim ;
+//                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
+//                    point.startAnimation(anim);
+                    but1.setBackgroundResource(R.color.green);
+                    Questions.arrayChouses.clear(); // очищаю лист в ответами(чтобы ответы не смешивались)
+                    timer.schedule(correctAnswerTask, 2000); //переход к следующему вопросу через 2 сек
                     // накопление очков
                     mscore = mscore + 1;
                     UpdateScore(mscore);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
                     // переход в меню при неправильном ответе через 2 сек
+                    but1.setBackgroundResource(R.color.colorAccent);
                     timer = new Timer();
-                    Mytask2 = new MyTask2();
-                    timer.schedule(Mytask2, 2000);
+                    incorrecttAnswerTask = new IncorrectTask();
+                    timer.schedule(incorrecttAnswerTask, 2000);
 
                   Toast toast = Toast.makeText(Quest.this, "Игра окончена. Количество правилых ответов: "  + mscore , Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
@@ -165,25 +150,27 @@ public class Quest extends AppCompatActivity {
                 countDownT.cancel();
 
                 timer = new Timer();
-                Mytask = new MyTask();
-                Button();
+                correctAnswerTask = new CorrectAnswerTask();
+                buttonEnabled();
                 if (but2.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
-                    Animation anim;
-                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
-                    point.startAnimation(anim);
-                    Questions.Numbers.clear();
-                    timer.schedule(Mytask, 2000);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
+//                    Animation anim;
+//                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
+//                    point.startAnimation(anim);
+                    but2.setBackgroundResource(R.color.green);
+                    Questions.arrayChouses.clear();
+                    timer.schedule(correctAnswerTask, 2000);
                     mscore = mscore + 1;
                     UpdateScore(mscore);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
+                    but2.setBackgroundResource(R.color.colorAccent);
                     timer = new Timer();
-                    Mytask2 = new MyTask2();
-                    timer.schedule(Mytask2, 2000);
+                    incorrecttAnswerTask = new IncorrectTask();
+                    timer.schedule(incorrecttAnswerTask, 2000);
 
                     Toast toast = Toast.makeText(Quest.this, "Игра окончена. Количество правилых ответов: "  + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
@@ -198,26 +185,27 @@ public class Quest extends AppCompatActivity {
                 countDownT.cancel();
 
                 timer = new Timer();
-                Mytask = new MyTask();
-                Button();
+                correctAnswerTask = new CorrectAnswerTask();
+                buttonEnabled();
                 if (but3.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
-                    Animation anim;
-                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
-                    point.startAnimation(anim);
-                    Questions.Numbers.clear();
-                    timer.schedule(Mytask, 2000);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
+//                    Animation anim;
+//                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
+//                    point.startAnimation(anim);
+                    but3.setBackgroundResource(R.color.green);
+                    Questions.arrayChouses.clear();
+                    timer.schedule(correctAnswerTask, 2000);
                     mscore = mscore + 1;
                     UpdateScore(mscore);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
+                    but3.setBackgroundResource(R.color.colorAccent);
                     timer = new Timer();
-                    Mytask2 = new MyTask2();
-                    timer.schedule(Mytask2, 2000);
-
+                    incorrecttAnswerTask = new IncorrectTask();
+                    timer.schedule(incorrecttAnswerTask, 2000);
                     Toast toast = Toast.makeText(Quest.this, "Игра окончена. Количество правилых ответов: "  + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
                     toast.show();
@@ -230,25 +218,27 @@ public class Quest extends AppCompatActivity {
                 countDownT.cancel();
 
                 timer = new Timer();
-                Mytask = new MyTask();
-                Button();
+                correctAnswerTask = new CorrectAnswerTask();
+                buttonEnabled();
                 if (but4.getText() == nCorrect){
-                    if (bTrueS)
-                    sound.play(SoundTrue, 1,1,1,0,1);
-                    Animation anim ;
-                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
-                    point.startAnimation(anim);
-                    Questions.Numbers.clear();
-                    timer.schedule(Mytask, 2000);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundTrue);
+//                    Animation anim ;
+//                    anim = AnimationUtils.loadAnimation(Quest.this, R.anim.mytrans);
+//                    point.startAnimation(anim);
+                    but4.setBackgroundResource(R.color.green);
+                    Questions.arrayChouses.clear();
+                    timer.schedule(correctAnswerTask, 2000);
                     mscore = mscore + 1;
                     UpdateScore(mscore);
                 }
                 else {
-                    if (bTrueS)
-                    sound.play(SoundFalse, 1,1,1,0,1);
+                    if (bTrueSound)
+                        Sound.playSound(Menu.soundFalse);
+                    but4.setBackgroundResource(R.color.colorAccent);
                     timer = new Timer();
-                    Mytask2 = new MyTask2();
-                    timer.schedule(Mytask2, 2000);
+                    incorrecttAnswerTask = new IncorrectTask();
+                    timer.schedule(incorrecttAnswerTask, 2000);
 
                     Toast toast = Toast.makeText(Quest.this, "Игра окончена. Количество правилых ответов: "  + mscore, Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0,0);
@@ -257,37 +247,44 @@ public class Quest extends AppCompatActivity {
             }
         });
     }
+    
+    public void onClickButton(){
+        countDownT.cancel();
 
+        timer = new Timer();
+        correctAnswerTask = new CorrectAnswerTask();
+        buttonEnabled();
+    }
 
 // Метод на все кнопки
-    public void Button(){
+    public void buttonEnabled(){
         if (but1.getText() == nCorrect) {
             but1.setEnabled(false);
             }
         else {
             but1.setEnabled(false);
-            but1.setVisibility(View.INVISIBLE);
+
             }
         if (but2.getText() == nCorrect) {
             but2.setEnabled(false);
         }
         else {
             but2.setEnabled(false);
-            but2.setVisibility(View.INVISIBLE);
+
         }
         if (but3.getText() == nCorrect) {
             but3.setEnabled(false);
         }
         else {
             but3.setEnabled(false);
-            but3.setVisibility(View.INVISIBLE);
+
         }
         if (but4.getText() == nCorrect) {
             but4.setEnabled(false);
         }
         else {
             but4.setEnabled(false);
-            but4.setVisibility(View.INVISIBLE);
+
         }
     }
 
@@ -308,7 +305,7 @@ public class Quest extends AppCompatActivity {
     }
 
 // Таймер при правильном ответе
-private class MyTask extends TimerTask{
+private class CorrectAnswerTask extends TimerTask{
     @Override
     public void run(){
         switch (scene){
@@ -329,8 +326,8 @@ private class MyTask extends TimerTask{
         }
     }
 }
-// Таймер при не правильном ответе
-private class MyTask2 extends TimerTask{
+// Таймер при неправильном ответе
+private class IncorrectTask extends TimerTask{
     @Override
     public void run(){
         Intent intent = new Intent(Quest.this, Menu.class);
@@ -352,9 +349,9 @@ private class MyTask2 extends TimerTask{
             toast.setGravity(Gravity.CENTER, 0,0);
             toast.show();
             timer = new Timer();
-            Mytask2 = new MyTask2();
-            timer.schedule(Mytask2, 2000);
-            Button();
+            incorrecttAnswerTask = new IncorrectTask();
+            timer.schedule(incorrecttAnswerTask, 2000);
+            buttonEnabled();
         }
     }
 }

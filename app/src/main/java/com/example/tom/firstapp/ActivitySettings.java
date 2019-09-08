@@ -7,16 +7,17 @@ import android.os.Bundle;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
+import com.example.tom.firstapp.utils.MyService;
+
 public class ActivitySettings extends AppCompatActivity {
 
-   private CheckBox CMusic;
-   private CheckBox CSound;
+   private CheckBox CMusic, CSound;
    final String SAVED_POS = "saved_pos";
-   SharedPreferences sPref;
+   SharedPreferences sPrefMusic;
    SharedPreferences sPrefSound;
 
-   static public boolean bTrueM;
-   static public boolean bTrueS;
+   static public boolean bTrueMusic;
+   static public boolean bTrueSound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,30 +41,34 @@ public class ActivitySettings extends AppCompatActivity {
     public void onPause(){
         super.onPause();
 
-        sPref = getSharedPreferences(SAVED_POS ,MODE_PRIVATE);
-        SharedPreferences.Editor editor = sPref.edit();
-        bTrueM = CMusic.isChecked();
-        editor.putBoolean(SAVED_POS, bTrueM);
+        sPrefMusic = getSharedPreferences(SAVED_POS ,MODE_PRIVATE);
+        SharedPreferences.Editor editor = sPrefMusic.edit();
+        bTrueMusic = CMusic.isChecked();
+        editor.putBoolean(SAVED_POS, bTrueMusic);
         editor.apply();
 
-        sPrefSound =getSharedPreferences("savedS" ,MODE_PRIVATE);
+        sPrefSound = getSharedPreferences("savedS" ,MODE_PRIVATE);
         SharedPreferences.Editor editor1 = sPrefSound.edit();
-        bTrueS = CSound.isChecked();
-        editor1.putBoolean("savedS", bTrueS);
+        bTrueSound = CSound.isChecked();
+        editor1.putBoolean("savedS", bTrueSound);
         editor1.apply();
+
+        MyService.pause();
     }
 
     @Override
     public void onResume(){
         super.onResume();
 
-        sPref = getSharedPreferences(SAVED_POS ,MODE_PRIVATE);
-        bTrueM = sPref.getBoolean(SAVED_POS,  bTrueM);
-        CMusic.setChecked(bTrueM);
+        sPrefMusic = getSharedPreferences(SAVED_POS ,MODE_PRIVATE);
+        bTrueMusic = sPrefMusic.getBoolean(SAVED_POS, bTrueMusic);
+        CMusic.setChecked(bTrueMusic);
 
         sPrefSound = getSharedPreferences("savedS", MODE_PRIVATE);
-        bTrueS = sPrefSound.getBoolean("savedS", bTrueS);
-        CSound.setChecked(bTrueS);
+        bTrueSound = sPrefSound.getBoolean("savedS", bTrueSound);
+        CSound.setChecked(bTrueSound);
+
+        if (bTrueMusic) MyService.start();
     }
 
     @Override
